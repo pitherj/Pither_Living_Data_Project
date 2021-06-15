@@ -1,0 +1,61 @@
+---
+title: "Scheduling uploads to OSF"
+author: "Jason Pither"
+date: "28/10/2020"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document was last updated on `r format(Sys.time(), '%B %d, %Y')`.  But hasn't been validated since October 2020....
+
+## Background
+
+This document describes how to set up a scheduled execution of an R script, specifically a script that uploads files from a local directory to a location on a personal OSF project or component. This is one way to ensure, for example, daily backup and version control of files. 
+
+Of course, there's nothing stopping you from simply dragging and dropping files from your local directory to the OSF project/location when you're ready, but it might be desirable to have a scheduled daily backup.  
+
+This is primarily intended for files like R scripts or relatively small binary documents (e.g. Word docs) that are edited frequently, but the script can refer to any number of local directories.  However, beware the file size limits and storage limits on OSF.  
+
+## Setting up daily file backup to OSF
+
+This routine relies on two items:  
+1. An R script that loads the `osfr` package and interfaces with OSF to upload files, and   
+2. A scheduler script that tells your operating system when to run the R script and where to find it
+
+**NOTE**: these schedulers will NOT run if your computer is asleep. On a Mac, you can use the System preferences > Energy Saver > Schedule tool to set up wake and sleep times around your backup routine if you wish.  On Windows, i have no idea, but presumably there's a similar preferences setting...
+
+### 1. R script
+
+The R script simply tells R where your local files are that you want to backup, and where on OSF to send them.  
+
+For an example, see the file ["demo_upload_files.R"](https://osf.io/apdgv/)
+
+### 2. Scheduler script
+
+Amazingly, there are R packages that make the setup of the scheduler script easy, via a Shiny app interface.
+
+For **Windows** consult the documentation for the [`taskscheduleR`](https://github.com/bnosac/taskscheduleR) package.
+You will need to install the `miniUI` and `shiny` packages also.
+
+For **Linux/MacOS** consult the documentation for the [`cronR`](https://cran.r-project.org/web/packages/cronR/vignettes/cronR.html) package.
+You will need to install the `miniUI`, `shiny`, and `shinyFiles` packages also.
+
+Assuming you're working in RStudio, then be sure to go to the RStudio Add-in section of the package documentation (of either `taskscheduleR` or `cronR`): it shows you how to use a handy Shiny interface for setting up a scheduled calling of an R script on your computer.
+
+When you fill in the GUI that it provides, it will create a script for you, store it in the correct location, and voila!  Here's an example of a script it created for me on my Mac (which uses `crontab` for running scheduled routines):
+
+```
+## cronR job
+## id:   job_16d2438e283b300a165f357a2afe70f3
+## tags: 
+## desc: I upload files from "myworkdir" to OSF daily at 9:30pm
+30 21 * * * /Library/Frameworks/R.framework/Resources/bin/Rscript '/myworkdir/upload_files.R'
+```
+
+Importantly, the same add-on Shiny app in RStudio provides the means to cancel any existing scheduled jobs.  
+
+That's all!
+
